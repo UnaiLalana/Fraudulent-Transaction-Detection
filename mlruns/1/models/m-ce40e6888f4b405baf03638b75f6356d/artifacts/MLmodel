@@ -1,0 +1,22 @@
+artifact_path: /home/alumno/Desktop/datos/MLOPS/Fraudulent-Transaction-Detection/mlruns/1/models/m-ce40e6888f4b405baf03638b75f6356d/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.14
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+mlflow_version: 3.7.0
+model_id: m-ce40e6888f4b405baf03638b75f6356d
+model_size_bytes: 1944612
+model_uuid: m-ce40e6888f4b405baf03638b75f6356d
+prompts: null
+run_id: 47e70e5b68e240239e5f3f2655d62439
+utc_time_created: '2025-12-19 10:30:53.716566'
