@@ -1,4 +1,4 @@
-artifact_path: /home/alumno/Desktop/datos/MLOPS/Fraudulent-Transaction-Detection/mlruns/1/models/m-ce40e6888f4b405baf03638b75f6356d/artifacts
+artifact_path: /home/alumno/Desktop/datos/MLOPS/Fraudulent-Transaction-Detection/mlruns/1/models/m-f55c2a8f8ffe43379ad3375571da78aa/artifacts
 flavors:
   python_function:
     env:
@@ -14,9 +14,9 @@ flavors:
     serialization_format: cloudpickle
     sklearn_version: 1.8.0
 mlflow_version: 3.7.0
-model_id: m-ce40e6888f4b405baf03638b75f6356d
-model_size_bytes: 1944612
-model_uuid: m-ce40e6888f4b405baf03638b75f6356d
+model_id: m-f55c2a8f8ffe43379ad3375571da78aa
+model_size_bytes: 1266851
+model_uuid: m-f55c2a8f8ffe43379ad3375571da78aa
 prompts: null
-run_id: 47e70e5b68e240239e5f3f2655d62439
-utc_time_created: '2025-12-19 10:30:53.716566'
+run_id: 082d1251c67d4194823632002bbbccda
+utc_time_created: '2025-12-19 10:57:23.593248'

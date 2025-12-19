@@ -39,10 +39,14 @@ def load_data():
     X = df.drop(
         columns=[
             TARGET_COLUMN,
+            "TRANSACTION_ID",
+            "Unnamed: 0",
             "TX_FRAUD_SCENARIO",
             "TX_DATETIME"
         ]
     )
+
+    print(X.head(5))
 
     y = df[TARGET_COLUMN]
 
