@@ -1,20 +1,17 @@
-import pandas as pd
-import numpy as np
-import optuna
-import xgboost as xgb
-import joblib
 from pathlib import Path
 
-from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import roc_auc_score, f1_score, precision_recall_curve
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-
+import joblib
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
-import matplotlib.pyplot as plt
-
-
+import numpy as np
+import optuna
+import pandas as pd
+import xgboost as xgb
+from sklearn.metrics import f1_score, precision_recall_curve, roc_auc_score
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "dataset.csv"
@@ -42,7 +39,9 @@ def load_data():
             "TRANSACTION_ID",
             "Unnamed: 0",
             "TX_FRAUD_SCENARIO",
-            "TX_DATETIME"
+            "TX_DATETIME",
+            "TERMINAL_ID",
+            "CUSTOMER_ID",
         ]
     )
 
@@ -53,11 +52,8 @@ def load_data():
     return X, y
 
 
-
 def objective(trial, X, y):
-
     with mlflow.start_run(nested=True):
-
         params = {
             "n_estimators": trial.suggest_int("n_estimators", 100, 600),
             "max_depth": trial.suggest_int("max_depth", 3, 10),
@@ -70,18 +66,14 @@ def objective(trial, X, y):
             "objective": "binary:logistic",
             "eval_metric": "auc",
             "random_state": RANDOM_STATE,
-            "tree_method": "hist"
+            "tree_method": "hist",
         }
 
         mlflow.log_params(params)
 
         model = xgb.XGBClassifier(**params)
 
-        cv = StratifiedKFold(
-            n_splits=N_SPLITS,
-            shuffle=True,
-            random_state=RANDOM_STATE
-        )
+        cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
 
         aucs = []
 
@@ -102,7 +94,6 @@ def objective(trial, X, y):
         return mean_auc
 
 
-
 def find_best_threshold(y_true, y_proba):
     precision, recall, thresholds = precision_recall_curve(y_true, y_proba)
     f1_scores = 2 * (precision * recall) / (precision + recall + 1e-8)
@@ -111,29 +102,28 @@ def find_best_threshold(y_true, y_proba):
 
 
 def main():
-
     with mlflow.start_run(run_name="Final_Model"):
-
         X, y = load_data()
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y,
-            test_size=0.2,
-            stratify=y,
-            random_state=RANDOM_STATE
+            X, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
         )
 
         study = optuna.create_study(direction="maximize")
-        study.optimize(lambda trial: objective(trial, X_train, y_train), n_trials=N_TRIALS)
+        study.optimize(
+            lambda trial: objective(trial, X_train, y_train), n_trials=N_TRIALS
+        )
 
         best_params = study.best_params
-        best_params.update({
-            "objective": "binary:logistic",
-            "eval_metric": "auc",
-            "random_state": RANDOM_STATE,
-            "scale_pos_weight": (y_train == 0).sum() / (y_train == 1).sum(),
-            "tree_method": "hist"
-        })
+        best_params.update(
+            {
+                "objective": "binary:logistic",
+                "eval_metric": "auc",
+                "random_state": RANDOM_STATE,
+                "scale_pos_weight": (y_train == 0).sum() / (y_train == 1).sum(),
+                "tree_method": "hist",
+            }
+        )
 
         mlflow.log_params(best_params)
         mlflow.log_metric("best_cv_auc", study.best_value)
@@ -147,7 +137,6 @@ def main():
         mlflow.log_metric("test_f1", best_f1)
         mlflow.log_param("decision_threshold", best_threshold)
 
-  
         plt.figure(figsize=(10, 6))
         xgb.plot_importance(final_model, max_num_features=15)
         plt.tight_layout()
@@ -156,15 +145,13 @@ def main():
 
         mlflow.log_artifact("feature_importance.png")
 
-
         mlflow.sklearn.log_model(
             sk_model=final_model,
             name="model",
-            registered_model_name="Fraud_XGBoost_Model"
+            registered_model_name="Fraud_XGBoost_Model",
         )
 
         print("Training completed and logged to MLflow")
-
 
 
 if __name__ == "__main__":
