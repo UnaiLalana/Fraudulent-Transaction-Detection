@@ -1,17 +1,20 @@
+import os
 from pathlib import Path
 
-import joblib
 import matplotlib.pyplot as plt
 import mlflow
-import mlflow.sklearn
 import numpy as np
 import optuna
 import pandas as pd
 import xgboost as xgb
-from sklearn.metrics import f1_score, precision_recall_curve, roc_auc_score
+from sklearn.metrics import (
+    f1_score,
+    precision_recall_curve,
+    roc_auc_score,
+    precision_score,
+    recall_score,
+)
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "dataset.csv"
@@ -19,14 +22,16 @@ TARGET_COLUMN = "TX_FRAUD"
 N_TRIALS = 5
 N_SPLITS = 5
 RANDOM_STATE = 42
-mlflow.set_experiment("Fraud_Detection_XGBoost")
 
+mlflow.set_tracking_uri(
+    os.environ.get("MLFLOW_TRACKING_URI", "mlruns")
+)
+mlflow.set_experiment("Fraud_Detection_XGBoost")
 
 def load_data():
     df = pd.read_csv(DATA_PATH)
 
     df["TX_DATETIME"] = pd.to_datetime(df["TX_DATETIME"])
-
     df["TX_HOUR"] = df["TX_DATETIME"].dt.hour
     df["TX_DAY"] = df["TX_DATETIME"].dt.day
     df["TX_DAYOFWEEK"] = df["TX_DATETIME"].dt.dayofweek
@@ -45,12 +50,8 @@ def load_data():
         ]
     )
 
-    print(X.head(5))
-
     y = df[TARGET_COLUMN]
-
     return X, y
-
 
 def objective(trial, X, y):
     with mlflow.start_run(nested=True):
@@ -72,27 +73,23 @@ def objective(trial, X, y):
         mlflow.log_params(params)
 
         model = xgb.XGBClassifier(**params)
-
-        cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
+        cv = StratifiedKFold(
+            n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE
+        )
 
         aucs = []
-
         for train_idx, val_idx in cv.split(X, y):
-            X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
-            y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+            X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]
+            y_tr, y_val = y.iloc[train_idx], y.iloc[val_idx]
 
-            model.fit(X_train, y_train)
+            model.fit(X_tr, y_tr)
             y_proba = model.predict_proba(X_val)[:, 1]
-
-            auc = roc_auc_score(y_val, y_proba)
-            aucs.append(auc)
+            aucs.append(roc_auc_score(y_val, y_proba))
 
         mean_auc = np.mean(aucs)
-
-        mlflow.log_metric("roc_auc", mean_auc)
+        mlflow.log_metric("cv_roc_auc", mean_auc)
 
         return mean_auc
-
 
 def find_best_threshold(y_true, y_proba):
     precision, recall, thresholds = precision_recall_curve(y_true, y_proba)
@@ -100,9 +97,8 @@ def find_best_threshold(y_true, y_proba):
     best_idx = np.argmax(f1_scores)
     return thresholds[best_idx], f1_scores[best_idx]
 
-
 def main():
-    with mlflow.start_run(run_name="Final_Model"):
+    with mlflow.start_run(run_name="Training"):
         X, y = load_data()
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -111,7 +107,8 @@ def main():
 
         study = optuna.create_study(direction="maximize")
         study.optimize(
-            lambda trial: objective(trial, X_train, y_train), n_trials=N_TRIALS
+            lambda trial: objective(trial, X_train, y_train),
+            n_trials=N_TRIALS,
         )
 
         best_params = study.best_params
@@ -128,17 +125,21 @@ def main():
         mlflow.log_params(best_params)
         mlflow.log_metric("best_cv_auc", study.best_value)
 
-        final_model = xgb.XGBClassifier(**best_params)
-        final_model.fit(X_train, y_train)
+        model = xgb.XGBClassifier(**best_params)
+        model.fit(X_train, y_train)
 
-        y_proba_test = final_model.predict_proba(X_test)[:, 1]
-        best_threshold, best_f1 = find_best_threshold(y_test, y_proba_test)
+        y_proba_test = model.predict_proba(X_test)[:, 1]
+        threshold, f1 = find_best_threshold(y_test, y_proba_test)
 
-        mlflow.log_metric("test_f1", best_f1)
-        mlflow.log_param("decision_threshold", best_threshold)
+        y_pred = (y_proba_test >= threshold).astype(int)
+
+        mlflow.log_metric("test_f1", f1)
+        mlflow.log_metric("test_precision", precision_score(y_test, y_pred))
+        mlflow.log_metric("test_recall", recall_score(y_test, y_pred))
+        mlflow.log_param("decision_threshold", float(threshold))
 
         plt.figure(figsize=(10, 6))
-        xgb.plot_importance(final_model, max_num_features=15)
+        xgb.plot_importance(model, max_num_features=15)
         plt.tight_layout()
         plt.savefig("feature_importance.png")
         plt.close()
@@ -146,13 +147,12 @@ def main():
         mlflow.log_artifact("feature_importance.png")
 
         mlflow.sklearn.log_model(
-            sk_model=final_model,
-            name="model",
+            model,
+            artifact_path="model",
             registered_model_name="Fraud_XGBoost_Model",
         )
 
-        print("Training completed and logged to MLflow")
-
+        print("Training completed")
 
 if __name__ == "__main__":
     main()
