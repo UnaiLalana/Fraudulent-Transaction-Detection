@@ -1,3 +1,4 @@
 /data
 /artifacts
 /mlruns
+__pycache__
