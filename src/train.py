@@ -47,6 +47,7 @@ def load_data():
             "TX_DATETIME",
             "TERMINAL_ID",
             "CUSTOMER_ID",
+            "TX_TIME_DAYS",
         ]
     )
 
