@@ -24,7 +24,7 @@ def predict_from_ui(amount, datetime_value, elapsed_seconds):
     }
 
     try:
-        r = requests.post(API_URL, json=payload, timeout=5)
+        r = requests.post(f"{API_URL}/predict", json=payload, timeout=10)
         r.raise_for_status()
         result = r.json()
     except Exception as e:
