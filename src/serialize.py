@@ -12,9 +12,7 @@ ARTIFACT_DIR.mkdir(exist_ok=True)
 MODEL_NAME = "Fraud_XGBoost_Model"
 MODEL_STAGE = "None"
 
-mlflow.set_tracking_uri(
-    os.environ.get("MLFLOW_TRACKING_URI", "mlruns")
-)
+mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI", "mlruns"))
 
 client = mlflow.tracking.MlflowClient()
 
@@ -27,7 +25,7 @@ run = client.get_run(latest.run_id)
 
 threshold = float(run.data.params["decision_threshold"])
 
-with open(ARTIFACT_DIR / "threshold.json", "w") as f:
+with open(ARTIFACT_DIR / "threshold.json", "w", encoding="utf-8") as f:
     json.dump({"decision_threshold": threshold}, f)
 
 print("Model and threshold correctly serialized")

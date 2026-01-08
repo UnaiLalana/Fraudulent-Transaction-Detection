@@ -8,7 +8,6 @@ import optuna
 import pandas as pd
 import xgboost as xgb
 from sklearn.metrics import (
-    f1_score,
     precision_recall_curve,
     roc_auc_score,
     precision_score,
@@ -23,10 +22,9 @@ N_TRIALS = 5
 N_SPLITS = 5
 RANDOM_STATE = 42
 
-mlflow.set_tracking_uri(
-    os.environ.get("MLFLOW_TRACKING_URI", "mlruns")
-)
+mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI", "mlruns"))
 mlflow.set_experiment("Fraud_Detection_XGBoost")
+
 
 def load_data():
     df = pd.read_csv(DATA_PATH)
@@ -54,6 +52,7 @@ def load_data():
     y = df[TARGET_COLUMN]
     return X, y
 
+
 def objective(trial, X, y):
     with mlflow.start_run(nested=True):
         params = {
@@ -74,9 +73,7 @@ def objective(trial, X, y):
         mlflow.log_params(params)
 
         model = xgb.XGBClassifier(**params)
-        cv = StratifiedKFold(
-            n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE
-        )
+        cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
 
         aucs = []
         for train_idx, val_idx in cv.split(X, y):
@@ -92,11 +89,13 @@ def objective(trial, X, y):
 
         return mean_auc
 
+
 def find_best_threshold(y_true, y_proba):
     precision, recall, thresholds = precision_recall_curve(y_true, y_proba)
     f1_scores = 2 * (precision * recall) / (precision + recall + 1e-8)
     best_idx = np.argmax(f1_scores)
     return thresholds[best_idx], f1_scores[best_idx]
+
 
 def main():
     with mlflow.start_run(run_name="Training"):
@@ -154,6 +153,7 @@ def main():
         )
 
         print("Training completed")
+
 
 if __name__ == "__main__":
     main()

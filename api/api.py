@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from prometheus_client import Counter, Gauge, generate_latest
 from src.inference import predict
 from pydantic import BaseModel
@@ -8,6 +8,7 @@ app = FastAPI(title="Fraud Detection API")
 
 REQUEST_COUNT = Counter("api_request_count", "Number of API requests")
 FRAUD_PROB_SUM = Gauge("fraud_probability_sum", "Sum of fraud probabilities")
+
 
 class Transaction(BaseModel):
     TX_AMOUNT: float
@@ -25,9 +26,11 @@ class Transaction(BaseModel):
         if self.TX_TIME_DAYS is None:
             self.TX_TIME_DAYS = self.TX_DAY
 
+
 @app.get("/")
 def read_root():
     return {"message": "Fraud Detection API is alive!"}
+
 
 @app.post("/predict")
 def predict_fraud(transaction: Transaction):
@@ -41,6 +44,7 @@ def predict_fraud(transaction: Transaction):
     FRAUD_PROB_SUM.set(result["fraud_probability"])
 
     return result
+
 
 @app.get("/metrics")
 def metrics():

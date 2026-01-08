@@ -12,8 +12,9 @@ THRESHOLD_PATH = ARTIFACT_DIR / "threshold.json"
 
 model = joblib.load(MODEL_PATH)
 
-with open(THRESHOLD_PATH) as f:
+with open(THRESHOLD_PATH, "r", encoding="utf-8") as f:
     threshold = float(json.load(f)["decision_threshold"])
+
 
 def predict(input_data: dict) -> dict:
     """

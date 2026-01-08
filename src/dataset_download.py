@@ -1,8 +1,8 @@
 import requests
 import os
 from pathlib import Path
-import pathlib
 import zipfile
+
 
 def download_dataset(data_path: str):
     data_path = Path(data_path)
@@ -19,7 +19,7 @@ def download_dataset(data_path: str):
 
     # Download Data
     print("Downloading data...")
-    req = requests.get(dataset_url, allow_redirects=True)
+    req = requests.get(dataset_url, allow_redirects=True, timeout=1000)
     if req.status_code != 200:
         print("Error fetchinf dataset")
         return
@@ -30,6 +30,7 @@ def download_dataset(data_path: str):
     zip_file = zipfile.ZipFile(data_path / filename, "r")
     with open(data_path / csv_file, "wb") as f:
         f.write(zip_file.read("Final Transactions.csv"))
+
 
 if __name__ == "__main__":
     download_dataset("./data")
