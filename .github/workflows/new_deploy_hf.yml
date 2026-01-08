@@ -32,8 +32,7 @@ jobs:
           HF_TOKEN: ${{ secrets.FRAUD_HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
         run: |
-          git remote add huggingface https://${FRAUD_HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/Fraudulent-Transaction-Detection.git
-          
+          git remote add huggingface https://${FRAUD_HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/Fraudulent_Transaction_Detection.git
       - name: Copy updated files
         run: |
           cp app.py requirements.txt .
