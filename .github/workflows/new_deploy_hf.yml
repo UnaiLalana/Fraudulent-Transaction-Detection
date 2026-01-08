@@ -1,0 +1,50 @@
+name: Deploy Gradio app to Hugging Face Space
+
+on:
+  push:
+    branches: ["master" ]
+    paths:
+      - "app.py"
+      - "requirements.txt"
+      - ".github/workflows/new_deploy_hf.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions"
+
+      - name: Add Hugging Face remote
+        env:
+          HF_TOKEN: ${{ secrets.FRAUD_HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        run: |
+          git remote add huggingface https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/lab3.git
+          
+      - name: Copy updated files
+        run: |
+          cp app.py requirements.txt .
+
+      - name: Commit changes
+        run: |
+          git add app.py requirements.txt
+          git commit -m "Update app.py and requirements.txt from GitHub Actions" || echo "No changes to commit"
+
+      - name: Push to GitHub
+        run: git push origin master
+
+      - name: Push to Hugging Face
+        run: git push huggingface main
