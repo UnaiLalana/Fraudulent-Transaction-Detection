@@ -32,7 +32,7 @@ jobs:
           HF_TOKEN: ${{ secrets.FRAUD_HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
         run: |
-          git remote add huggingface https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/lab3.git
+          git remote add huggingface https://${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/Fraudulent-Transaction-Detection.git
           
       - name: Copy updated files
         run: |
