@@ -24,7 +24,7 @@ print(f"Using device: {DEVICE}")
 # --------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_PATH = BASE_DIR / "data" / "dataset.csv"
+DATA_PATH = BASE_DIR / "data" / "train.csv"
 TARGET_COLUMN = "TX_FRAUD"
 N_TRIALS = 1
 N_SPLITS = 3

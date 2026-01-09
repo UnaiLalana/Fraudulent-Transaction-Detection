@@ -36,7 +36,6 @@ def test_predict_probability_changes():
     sample_1 = {
         "TX_AMOUNT": 5.0,
         "TX_TIME_SECONDS": 10*3600 + 10*60,
-        "TX_TIME_DAYS": 10,
         "TX_HOUR": 10,
         "TX_DAY": 10,
         "TX_DAYOFWEEK": 1,
@@ -47,7 +46,6 @@ def test_predict_probability_changes():
     sample_2 = {
         "TX_AMOUNT": 5000.0,
         "TX_TIME_SECONDS": 2*3600 + 10*60,
-        "TX_TIME_DAYS": 10,
         "TX_HOUR": 2,
         "TX_DAY": 10,
         "TX_DAYOFWEEK": 6,
