@@ -48,13 +48,15 @@ def temporal_split(
 
     df_train = df.iloc[: n_total - n_drift]
     df_drift = df.iloc[n_total - n_drift :]
-
+    df_train_cicd = df_train.iloc[: int(len(df_train) * 0.1)]
     df_train.to_csv(data_path / "train.csv", index=False)
     df_drift.to_csv(data_path / "data_drift.csv", index=False)
+    df_train_cicd.to_csv("train_cicd.csv", index=False)
 
     print("Temporal split completed:")
     print(f"Train (CV inside): {len(df_train)} rows")
     print(f"Data drift (future): {len(df_drift)} rows")
+    print(f"Train (CICD): {len(df_train_cicd)} rows")
 
 
 if __name__ == "__main__":
