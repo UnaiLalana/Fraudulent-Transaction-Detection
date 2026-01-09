@@ -13,4 +13,7 @@ lint:
 
 refactor: format lint
 
-all: install format lint test
+train:
+	uv run src/train_CICD.py
+
+all: install format lint test train

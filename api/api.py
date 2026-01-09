@@ -13,7 +13,6 @@ FRAUD_PROB_SUM = Gauge("fraud_probability_sum", "Sum of fraud probabilities")
 class Transaction(BaseModel):
     TX_AMOUNT: float
     TX_TIME_SECONDS: Optional[int] = None
-    TX_TIME_DAYS: Optional[int] = None
     TX_HOUR: int
     TX_DAY: int
     TX_DAYOFWEEK: int
@@ -23,9 +22,7 @@ class Transaction(BaseModel):
     def complete_features(self):
         if self.TX_TIME_SECONDS is None:
             self.TX_TIME_SECONDS = self.TX_HOUR * 3600
-        if self.TX_TIME_DAYS is None:
-            self.TX_TIME_DAYS = self.TX_DAY
-
+    
 
 @app.get("/")
 def read_root():

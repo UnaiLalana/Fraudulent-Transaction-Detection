@@ -26,7 +26,7 @@ print(f"Using device: {DEVICE}")
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "dataset.csv"
 TARGET_COLUMN = "TX_FRAUD"
-N_TRIALS = 3
+N_TRIALS = 1
 N_SPLITS = 3
 RANDOM_STATE = 42
 
@@ -95,7 +95,7 @@ def objective(trial, X, y):
                 y_tr,
                 eval_set=[(X_val, y_val)],
                 eval_metric=["auc"],
-                max_epochs=5,
+                max_epochs=1,
                 patience=3,
                 batch_size=1024,
                 virtual_batch_size=128,
@@ -163,8 +163,8 @@ def main():
             y_train,
             eval_set=[(X_test, y_test)],
             eval_metric=["auc"],
-            max_epochs=200,
-            patience=20,
+            max_epochs=5,
+            patience=5,
             batch_size=1024,
             virtual_batch_size=128,
             num_workers=0,
@@ -192,11 +192,11 @@ def main():
         )
         plt.title("Top 15 Feature Importances (TabNet)")
         plt.tight_layout()
-        mlflow.log_figure(plt.gcf(), "feature_importance.png")
+        plt.savefig("feature_importance_tabnet.png")
         plt.close()
 
-        model.to("cpu")
-        mlflow.pytorch.log_model(model, artifact_path="model", registered_model_name="Fraud_TabNet_Model")
+        mlflow.log_artifact("feature_importance_tabnet.png")
+
         print("Training completed with TabNet")
 
 if __name__ == "__main__":

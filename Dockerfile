@@ -34,6 +34,7 @@ COPY --from=builder /usr/local /usr/local
 COPY api ./api
 COPY src ./src
 COPY artifacts ./artifacts
+COPY src/train_CICD.py ./src/train_CICD.py
 # Expose the port associated with the API created with FastAPI
 EXPOSE 8000
 # Default command: it starts the API with uvicorn

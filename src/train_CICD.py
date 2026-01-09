@@ -16,7 +16,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_PATH = BASE_DIR / "data" / "dataset.csv"
+DATA_PATH = BASE_DIR / "data" / "train.csv"
 TARGET_COLUMN = "TX_FRAUD"
 N_TRIALS = 5
 N_SPLITS = 5
@@ -100,7 +100,7 @@ def find_best_threshold(y_true, y_proba):
 def main():
     with mlflow.start_run(run_name="Training"):
         X, y = load_data()
-
+        X, _, y, _ = train_test_split(X, y, test_size=0.9, stratify=y, random_state=RANDOM_STATE)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
         )
@@ -141,10 +141,10 @@ def main():
         plt.figure(figsize=(10, 6))
         xgb.plot_importance(model, max_num_features=15)
         plt.tight_layout()
-        plt.savefig("feature_importance.png")
+        plt.savefig("feature_importance_xgb.png")
         plt.close()
 
-        mlflow.log_artifact("feature_importance.png")
+        mlflow.log_artifact("feature_importance_xgb.png")
 
         mlflow.sklearn.log_model(
             model,
