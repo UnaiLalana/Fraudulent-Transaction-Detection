@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import mlflow
@@ -15,8 +14,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_PATH = BASE_DIR / "data" / "train.csv"
+DATA_PATH = "app/data/train.csv"
 TARGET_COLUMN = "TX_FRAUD"
 N_TRIALS = 5
 N_SPLITS = 5
