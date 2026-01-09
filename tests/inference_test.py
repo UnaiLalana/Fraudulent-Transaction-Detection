@@ -12,7 +12,6 @@ def test_predict_returns_valid_output():
     sample_input = {
     "TX_AMOUNT": 120.5,
     "TX_TIME_SECONDS": 14*3600 + 12*60,
-    "TX_TIME_DAYS": 12,
     "TX_HOUR": 14,
     "TX_DAY": 12,
     "TX_DAYOFWEEK": 3,
