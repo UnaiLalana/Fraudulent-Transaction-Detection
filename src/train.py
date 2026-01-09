@@ -23,7 +23,7 @@ N_SPLITS = 5
 RANDOM_STATE = 42
 
 mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI", "mlruns"))
-mlflow.set_experiment("Fraud_Detection_XGBoost")
+mlflow.set_experiment("Fraud_Detection")
 
 
 def load_data():
