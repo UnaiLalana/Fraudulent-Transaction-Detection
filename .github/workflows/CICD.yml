@@ -24,8 +24,9 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-        name: Train Small Model
-      - name: train
+      - name: install packages
+        run: make install
+      - name: Train Small Model
         run: make train
   deploy:
     runs-on: ubuntu-latest
