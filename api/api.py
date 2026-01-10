@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from src.inference import predict
 from pydantic import BaseModel
