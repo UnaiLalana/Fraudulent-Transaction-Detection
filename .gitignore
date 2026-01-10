@@ -1,3 +1,6 @@
 /data
 /mlruns
 __pycache__
+feature_importance_xgb.png
+feature_importance_tabnet.png
+mlflow.db
