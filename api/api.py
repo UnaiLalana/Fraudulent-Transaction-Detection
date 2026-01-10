@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, Response
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from src.inference import predict
 from pydantic import BaseModel
 from collections import defaultdict, deque
