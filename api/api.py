@@ -2,46 +2,76 @@ from fastapi import FastAPI
 from prometheus_client import Counter, Gauge, generate_latest
 from src.inference import predict
 from pydantic import BaseModel
-from typing import Optional
+from collections import defaultdict, deque
+import json
+import numpy as np
 
 app = FastAPI(title="Fraud Detection API")
 
 REQUEST_COUNT = Counter("api_request_count", "Number of API requests")
 FRAUD_PROB_SUM = Gauge("fraud_probability_sum", "Sum of fraud probabilities")
 
+with open("artifacts/baseline.json") as f:
+    BASELINE = json.load(f)
+
+BUFFER_SIZE = 200
+
+live_buffer = defaultdict(lambda: deque(maxlen=BUFFER_SIZE))
+
+DATA_DRIFT_PSI = Gauge(
+    "data_drift_psi",
+    "Population Stability Index",
+    ["feature"]
+)
 
 class Transaction(BaseModel):
     TX_AMOUNT: float
-    TX_TIME_SECONDS: Optional[int] = None
+    TX_TIME_SECONDS: int
     TX_HOUR: int
     TX_DAY: int
     TX_DAYOFWEEK: int
     TX_MONTH: int
     TX_IS_WEEKEND: int
 
-    def complete_features(self):
-        if self.TX_TIME_SECONDS is None:
-            self.TX_TIME_SECONDS = self.TX_HOUR * 3600
-    
+def calculate_psi(expected_counts, bins, actual_values):
+    actual_counts, _ = np.histogram(actual_values, bins=bins)
+    actual_perc = actual_counts / len(actual_values)
+    expected_perc = np.array(expected_counts) / sum(expected_counts)
+
+    psi = np.sum(
+        (actual_perc - expected_perc) *
+        np.log((actual_perc + 1e-6) / (expected_perc + 1e-6))
+    )
+    return float(psi)
+
 
 @app.get("/")
 def read_root():
     return {"message": "Fraud Detection API is alive!"}
 
-
 @app.post("/predict")
 def predict_fraud(transaction: Transaction):
     REQUEST_COUNT.inc()
 
-    transaction.complete_features()
-
     payload = transaction.dict()
+
+    for feature in BASELINE.keys():
+        live_buffer[feature].append(payload[feature])
+    
     result = predict(payload)
 
     FRAUD_PROB_SUM.set(result["fraud_probability"])
 
-    return result
+    for feature, buffer in live_buffer.items():
+        if len(buffer) >= 50:
+            psi = calculate_psi(
+                BASELINE[feature]["counts"],
+                BASELINE[feature]["bins"],
+                list(buffer)
+            )
+            DATA_DRIFT_PSI.labels(feature=feature).set(psi)
 
+    return result
 
 @app.get("/metrics")
 def metrics():
