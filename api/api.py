@@ -11,7 +11,7 @@ app = FastAPI(title="Fraud Detection API")
 REQUEST_COUNT = Counter("api_request_count", "Number of API requests")
 FRAUD_PROB_SUM = Gauge("fraud_probability_sum", "Sum of fraud probabilities")
 
-with open("artifacts/baseline.json") as f:
+with open("artifacts/baseline.json", "r", encoding="utf-8") as f:
     BASELINE = json.load(f)
 
 BUFFER_SIZE = 200
