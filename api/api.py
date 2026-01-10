@@ -11,7 +11,7 @@ app = FastAPI(title="Fraud Detection API")
 REQUEST_COUNT = Counter("api_request_count", "Number of API requests")
 FRAUD_PROB_SUM = Gauge("fraud_probability_sum", "Sum of fraud probabilities")
 
-with open("artifacts/baseline.json", "r", encoding="utf-8") as f:
+with open("artifacts/baseline_stats.json", "r", encoding="utf-8") as f:
     BASELINE = json.load(f)
 
 BUFFER_SIZE = 200
@@ -60,10 +60,10 @@ def predict_fraud(transaction: Transaction):
     
     result = predict(payload)
 
-    FRAUD_PROB_SUM.set(result["fraud_probability"])
+    FRAUD_PROB_SUM.inc(result["fraud_probability"])
 
     for feature, buffer in live_buffer.items():
-        if len(buffer) >= 50:
+        if len(buffer) >= 5:
             psi = calculate_psi(
                 BASELINE[feature]["counts"],
                 BASELINE[feature]["bins"],

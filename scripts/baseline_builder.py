@@ -4,7 +4,6 @@ import pandas as pd
 
 df = pd.read_csv("data/train.csv")
 
-
 df["TX_DATETIME"] = pd.to_datetime(df["TX_DATETIME"])
 df["TX_HOUR"] = df["TX_DATETIME"].dt.hour
 df["TX_DAY"] = df["TX_DATETIME"].dt.day
