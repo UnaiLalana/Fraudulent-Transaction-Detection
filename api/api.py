@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, generate_latest
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, Response
 from src.inference import predict
 from pydantic import BaseModel
 from collections import defaultdict, deque
@@ -75,4 +75,7 @@ def predict_fraud(transaction: Transaction):
 
 @app.get("/metrics")
 def metrics():
-    return generate_latest()
+    return Response(
+        generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
