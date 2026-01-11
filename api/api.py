@@ -12,6 +12,7 @@ import json
 import numpy as np
 
 app = FastAPI(title="Fraud Detection API")
+app.state.requests_since_start = 0
 REQUEST_COUNT = Counter(
     "api_request_count",
     "Number of API requests"
@@ -33,7 +34,6 @@ with open("artifacts/baseline_stats.json", "r", encoding="utf-8") as f:
 BUFFER_SIZE = 20
 MIN_PSI_SAMPLES = 3            
 REQUESTS_FOR_PSI = 10
-REQUESTS_SINCE_START = 0
 
 live_buffer = defaultdict(
     lambda: deque(maxlen=BUFFER_SIZE)
@@ -69,8 +69,7 @@ def read_root():
 
 @app.post("/predict")
 def predict_fraud(transaction: Transaction):
-    global REQUESTS_SINCE_START
-    REQUESTS_SINCE_START += 1
+    app.state.requests_since_start += 1
     REQUEST_COUNT.inc()
 
     payload = transaction.dict()
@@ -80,7 +79,7 @@ def predict_fraud(transaction: Transaction):
     result = predict(payload)
     FRAUD_PROB_SUM.inc(result["fraud_probability"])
 
-    if REQUESTS_SINCE_START % REQUESTS_FOR_PSI == 0:
+    if app.state.requests_since_start % REQUESTS_FOR_PSI == 0:
         for feature, buffer in live_buffer.items():
             if len(buffer) >= MIN_PSI_SAMPLES:
                 psi = calculate_psi(
