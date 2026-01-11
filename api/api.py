@@ -46,6 +46,7 @@ live_buffer = defaultdict(
 @app.on_event("startup")
 def init_metrics():
     for feature in BASELINE.keys():
+        print("BASELINE FEATURES:", list(BASELINE.keys()))
         DATA_DRIFT_PSI.labels(feature=feature).set(0.0)
 
 class Transaction(BaseModel):
