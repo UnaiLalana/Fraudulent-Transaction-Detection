@@ -32,7 +32,8 @@ with open("artifacts/baseline_stats.json", "r", encoding="utf-8") as f:
     BASELINE = json.load(f)
 BUFFER_SIZE = 20
 MIN_PSI_SAMPLES = 3            
-REQUESTS_FOR_PSI = 10          
+REQUESTS_FOR_PSI = 10
+REQUESTS_SINCE_START = 0
 
 live_buffer = defaultdict(
     lambda: deque(maxlen=BUFFER_SIZE)
@@ -68,6 +69,8 @@ def read_root():
 
 @app.post("/predict")
 def predict_fraud(transaction: Transaction):
+    global REQUESTS_SINCE_START
+    REQUESTS_SINCE_START += 1
     REQUEST_COUNT.inc()
 
     payload = transaction.dict()
@@ -76,9 +79,8 @@ def predict_fraud(transaction: Transaction):
         live_buffer[feature].append(payload[feature])
     result = predict(payload)
     FRAUD_PROB_SUM.inc(result["fraud_probability"])
-    request_number = REQUEST_COUNT._value.get()
 
-    if request_number % REQUESTS_FOR_PSI == 0:
+    if REQUESTS_SINCE_START % REQUESTS_FOR_PSI == 0:
         for feature, buffer in live_buffer.items():
             if len(buffer) >= MIN_PSI_SAMPLES:
                 psi = calculate_psi(
