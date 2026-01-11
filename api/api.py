@@ -14,6 +14,12 @@ import numpy as np
 
 app = FastAPI(title="Fraud Detection API")
 app.state.requests_since_start = 0
+
+RENDER_SANITY = Gauge(
+    "render_sanity_metric",
+    "Sanity check metric to verify custom metrics exposure"
+)
+
 REQUEST_COUNT = Counter(
     "api_request_count",
     "Number of API requests",
@@ -73,6 +79,7 @@ def calculate_psi(expected_counts, bins, actual_values):
 
 @app.get("/")
 def read_root():
+    RENDER_SANITY.set(1)
     return {"message": "Fraud Detection API is alive!"}
 
 @app.post("/predict")
