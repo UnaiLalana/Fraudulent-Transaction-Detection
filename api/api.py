@@ -3,7 +3,8 @@ from prometheus_client import (
     Counter,
     Gauge,
     generate_latest,
-    CONTENT_TYPE_LATEST
+    CONTENT_TYPE_LATEST,
+    REGISTRY
 )
 from src.inference import predict
 from pydantic import BaseModel
@@ -15,18 +16,21 @@ app = FastAPI(title="Fraud Detection API")
 app.state.requests_since_start = 0
 REQUEST_COUNT = Counter(
     "api_request_count",
-    "Number of API requests"
+    "Number of API requests",
+    registry=REGISTRY
 )
 
 FRAUD_PROB_SUM = Gauge(
     "fraud_probability_sum",
-    "Sum of fraud probabilities"
+    "Sum of fraud probabilities",
+    registry=REGISTRY
 )
 
 DATA_DRIFT_PSI = Gauge(
     "data_drift_psi",
     "Population Stability Index",
-    ["feature"]
+    ["feature"],
+    registry=REGISTRY
 )
 
 with open("artifacts/baseline_stats.json", "r", encoding="utf-8") as f:
@@ -94,6 +98,6 @@ def predict_fraud(transaction: Transaction):
 @app.get("/metrics")
 def metrics():
     return Response(
-        generate_latest(),
+        generate_latest(REGISTRY),
         media_type=CONTENT_TYPE_LATEST
     )

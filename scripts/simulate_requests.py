@@ -38,4 +38,4 @@ for _, row in tqdm(df.iterrows(), total=len(df), desc="Sending requests"):
         requests.post(API_URL, json=row.to_dict(), verify=False)
     except Exception as e:
         print(f"Error enviando fila: {e}")
-    time.sleep(1)
+    time.sleep(15)
