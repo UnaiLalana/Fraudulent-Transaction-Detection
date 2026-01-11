@@ -38,8 +38,8 @@ live_buffer = defaultdict(
     lambda: deque(maxlen=BUFFER_SIZE)
 )
 
-for feature in BASELINE.keys():
-    DATA_DRIFT_PSI.labels(feature=feature).set(0.0)
+for f in BASELINE.keys():
+    DATA_DRIFT_PSI.labels(feature=f).set(0.0)
 class Transaction(BaseModel):
     TX_AMOUNT: float
     TX_TIME_SECONDS: int
