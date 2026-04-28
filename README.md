@@ -78,7 +78,7 @@ GET /
 ```
 
 ### Predict Fraud
-**Endpoint:** `POST /predict`
+**Endpoint:** `POST /predict` ot `/docs`
 
 **Request Body:**
 ```json
